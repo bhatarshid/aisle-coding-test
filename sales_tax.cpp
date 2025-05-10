@@ -8,16 +8,16 @@ using namespace std;
 
 struct InputItem {
     int quantity;
-    std::string name;
+    string name;
     bool isImported;
     double price;
     bool book;
     bool food;
-    bool medicince;
+    bool medicine;
 };
 
 class Product {
-  public:
+public:
     Product(string name, double price, bool isImported, bool isExempt)
         : name(name), price(price), isImported(isImported), isExempt(isExempt) {}
 
@@ -39,8 +39,8 @@ class Product {
         }
         return roundTax(tax);
     }
-  
-  private:
+
+private:
     string name;
     double price;
     bool isImported;
@@ -52,7 +52,7 @@ class Product {
 };
 
 class LineItem {
-  public:
+public:
     LineItem(const Product& product, int quantity)
         : product(product), quantity(quantity) {
         salesTax = product.calculateTax() * quantity;
@@ -72,7 +72,7 @@ class LineItem {
         return totalPrice;
     }
 
-  private:
+private:
     Product product;
     int quantity;
     double salesTax;
@@ -102,8 +102,7 @@ private:
 };
 
 bool isExemptProduct(const InputItem& item) {
-    if (item.food || item.book || item.medicince) return true;
-    return false;
+    return item.book || item.food || item.medicine;
 }
 
 class ShoppingBasket {
@@ -136,34 +135,63 @@ void runInput(const vector<InputItem>& items) {
     cout << endl;
 }
 
+bool getYesNo(const string& prompt) {
+    string response;
+    while (true) {
+        cout << prompt << " (y/n): ";
+        cin >> response;
+        if (response == "y" || response == "Y") return true;
+        if (response == "n" || response == "N") return false;
+        cout << "Invalid input. Please enter 'y' or 'n'." << endl;
+    }
+}
+
 int main() {
-    std::vector<InputItem> input1 = {
-        {1, "book", false, 12.49, true, false, false},
-        {1, "music CD", false, 14.99, false, false, false},
-        {1, "chocolate bar", false, 0.85, false, true, true}
-    };
+    int itemCount;
+    cout << "Enter number of items: ";
+    cin >> itemCount;
+    cin.ignore(); 
 
-    std::vector<InputItem> input2 = {
-        {1, "box of chocolates", true, 10.00, false, true, false},
-        {1, "bottle of perfume", true, 47.50, false, false, false}
-    };
+    vector<InputItem> items;
 
-    std::vector<InputItem> input3 = {
-        {1, "bottle of perfume", true, 27.99, false, false, false},
-        {1, "bottle of perfume", false, 18.99, false, false, false},
-        {1, "packet of headache pills", false, 9.75, false, false, true},
-        {1, "box of chocolates", true, 11.25, false, true, false}
-    };
+    for (int i = 0; i < itemCount; ++i) {
+        InputItem item;
+        cout << "\nItem #" << (i + 1) << endl;
 
+        cout << "Enter product name: ";
+        getline(cin, item.name);
 
-    cout << "Output 1:" << endl;
-    runInput(input1);
+        cout << "Enter quantity: ";
+        cin >> item.quantity;
 
-    cout << "Output 2:" << endl;
-    runInput(input2);
+        cout << "Enter price: ";
+        cin >> item.price;
 
-    cout << "Output 3:" << endl;
-    runInput(input3);
+        item.isImported = getYesNo("Is the item imported?");
+        item.book = getYesNo("Is the item a book?");
+        if (item.book == true) {
+            item.food = false;
+            item.medicine = false;
+            
+            cin.ignore();
+            items.push_back(item);
+            continue;
+        }
+        item.food = getYesNo("Is the item a food?");
+        if (item.food == true) {
+            item.medicine = false;
+            cin.ignore();
+            items.push_back(item);
+            continue;
+        }
+        item.medicine = getYesNo("Is the item a medicine?");
+        
+        cin.ignore(); 
+        items.push_back(item);
+    }
+
+    cout << "\n===== RECEIPT =====" << endl;
+    runInput(items);
 
     return 0;
 }
